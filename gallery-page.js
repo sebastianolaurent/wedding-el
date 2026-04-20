@@ -28,6 +28,44 @@ let items = [];
 let currentLightboxIndex = 0;
 let pendingGuestAuthorName = '';
 let cachedGuestAuthorName = '';
+const FOCUSABLE_SELECTOR = [
+  'a[href]',
+  'button:not([disabled])',
+  'input:not([disabled]):not([type="hidden"])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])'
+].join(',');
+let lastLightboxTrigger = null;
+let lastAuthorModalTrigger = null;
+
+function getFocusableElements(container) {
+  if (!(container instanceof HTMLElement)) return [];
+  return Array.from(container.querySelectorAll(FOCUSABLE_SELECTOR)).filter(
+    (element) => element instanceof HTMLElement && !element.hasAttribute('hidden')
+  );
+}
+
+function trapFocusWithin(container, event) {
+  if (!(event instanceof KeyboardEvent) || event.key !== 'Tab') return;
+  const focusableElements = getFocusableElements(container);
+  if (!focusableElements.length) return;
+  const first = focusableElements[0];
+  const last = focusableElements[focusableElements.length - 1];
+  const active = document.activeElement;
+
+  if (event.shiftKey && active === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && active === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
+function restoreFocus(node) {
+  if (node instanceof HTMLElement) node.focus();
+}
 
 function escapeHtml(text) {
   return String(text || '')
@@ -125,6 +163,8 @@ function askGuestAuthorName(initialValue = '') {
 
   return new Promise((resolve) => {
     let settled = false;
+    lastAuthorModalTrigger =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
     const closeModal = (value) => {
       if (settled) return;
@@ -136,7 +176,10 @@ function askGuestAuthorName(initialValue = '') {
       authorModalCancel?.removeEventListener('click', onCancel);
       authorModalClose?.removeEventListener('click', onCancel);
       authorModal.removeEventListener('click', onBackdropClick);
+      document.removeEventListener('keydown', onTrapFocus);
       document.removeEventListener('keydown', onEscape);
+      restoreFocus(lastAuthorModalTrigger);
+      lastAuthorModalTrigger = null;
       resolve(value);
     };
 
@@ -161,6 +204,10 @@ function askGuestAuthorName(initialValue = '') {
       if (event.key === 'Escape') onCancel();
     };
 
+    const onTrapFocus = (event) => {
+      trapFocusWithin(authorModal, event);
+    };
+
     authorModalInput.value = initialValue;
     authorModalError.textContent = '';
     authorModal.classList.add('is-open');
@@ -170,6 +217,7 @@ function askGuestAuthorName(initialValue = '') {
     authorModalCancel?.addEventListener('click', onCancel);
     authorModalClose?.addEventListener('click', onCancel);
     authorModal.addEventListener('click', onBackdropClick);
+    document.addEventListener('keydown', onTrapFocus);
     document.addEventListener('keydown', onEscape);
     requestAnimationFrame(() => {
       authorModalInput.focus();
@@ -392,6 +440,7 @@ function renderGallery() {
 
 function openLightbox(index) {
   if (!photoLightbox || !lightboxImage || !items.length) return;
+  lastLightboxTrigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const safeIndex = ((index % items.length) + items.length) % items.length;
   const authorLabel = getGuestAuthorLabel(items[safeIndex].author);
   currentLightboxIndex = safeIndex;
@@ -399,7 +448,11 @@ function openLightbox(index) {
   lightboxImage.alt = authorLabel ? `Foto di ${authorLabel}` : 'Foto invitati';
   photoLightbox.classList.add('is-open');
   photoLightbox.setAttribute('aria-hidden', 'false');
+  photoLightbox.setAttribute('tabindex', '-1');
   document.body.classList.add('lightbox-open');
+  requestAnimationFrame(() => {
+    (lightboxCloseButton || photoLightbox).focus();
+  });
 }
 
 function closeLightbox() {
@@ -408,6 +461,8 @@ function closeLightbox() {
   photoLightbox.setAttribute('aria-hidden', 'true');
   lightboxImage.src = '';
   document.body.classList.remove('lightbox-open');
+  restoreFocus(lastLightboxTrigger);
+  lastLightboxTrigger = null;
 }
 
 function showNext(direction) {
@@ -534,6 +589,7 @@ function initLightboxEvents() {
     if (event.key === 'Escape') closeLightbox();
     if (event.key === 'ArrowLeft') showNext(-1);
     if (event.key === 'ArrowRight') showNext(1);
+    if (event.key === 'Tab') trapFocusWithin(photoLightbox, event);
   });
 }
 

@@ -43,6 +43,26 @@ body {
   overflow-x: hidden;
 }
 
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -44px;
+  z-index: 9999;
+  padding: 0.55rem 0.85rem;
+  border-radius: 0.6rem;
+  background: #1f1730;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  transition: top 120ms ease;
+}
+
+.skip-link:focus-visible {
+  top: 12px;
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
 body::before,
 body::after {
   content: "";
@@ -233,8 +253,8 @@ p {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(to top, rgba(28, 20, 41, 0.18), rgba(28, 20, 41, 0.18)),
-    radial-gradient(circle at 75% 20%, rgba(230, 210, 255, 0.1), transparent 44%);
+    linear-gradient(to top, rgba(28, 20, 41, 0.26), rgba(28, 20, 41, 0.26)),
+    radial-gradient(circle at 75% 20%, rgba(230, 210, 255, 0.14), transparent 44%);
   z-index: 1;
 }
 
@@ -536,6 +556,15 @@ p {
   min-height: 320px;
   border: 0;
   background: transparent;
+}
+
+.program-map-fallback {
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+  font-size: 0.93rem;
+  color: var(--muted);
+  border-top: 1px solid rgba(145, 107, 201, 0.2);
+  background: rgba(255, 255, 255, 0.72);
 }
 
 .guest-gallery-copy {

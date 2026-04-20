@@ -61,6 +61,16 @@ let easterKeyBuffer = '';
 const externalScriptPromises = new Map();
 const weddingEventConfig = getWeddingEventConfig();
 const previewDateOverride = getPreviewDateFromUrl();
+const FOCUSABLE_SELECTOR = [
+  'a[href]',
+  'button:not([disabled])',
+  'input:not([disabled]):not([type="hidden"])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])'
+].join(',');
+let lastLightboxTrigger = null;
+let lastAuthorModalTrigger = null;
 
 function getWeddingEventConfig() {
   const rawConfig = window.WEDDING_EVENT_CONFIG || {};
@@ -120,6 +130,36 @@ function getWeddingPhase(date = new Date()) {
 
 function isGalleryWindowOpen(date = new Date()) {
   return getWeddingPhase(date) === 'event';
+}
+
+function getFocusableElements(container) {
+  if (!(container instanceof HTMLElement)) return [];
+  return Array.from(container.querySelectorAll(FOCUSABLE_SELECTOR)).filter(
+    (element) => element instanceof HTMLElement && !element.hasAttribute('hidden')
+  );
+}
+
+function trapFocusWithin(container, event) {
+  if (!(event instanceof KeyboardEvent) || event.key !== 'Tab') return;
+  const focusableElements = getFocusableElements(container);
+  if (!focusableElements.length) return;
+  const first = focusableElements[0];
+  const last = focusableElements[focusableElements.length - 1];
+  const active = document.activeElement;
+
+  if (event.shiftKey && active === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && active === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
+function restoreFocus(node) {
+  if (node instanceof HTMLElement) {
+    node.focus();
+  }
 }
 
 function applyGalleryAvailabilityRules() {
@@ -510,10 +550,29 @@ function initLazyMapEmbeds() {
   const mapEmbeds = Array.from(document.querySelectorAll('.program-map-embed[data-src]'));
   if (!mapEmbeds.length) return;
 
+  const showMapFallback = (frame) => {
+    const fallback = frame?.closest('.program-map-preview')?.querySelector('[data-map-fallback]');
+    if (fallback instanceof HTMLElement) fallback.hidden = false;
+  };
+
+  const hideMapFallback = (frame) => {
+    const fallback = frame?.closest('.program-map-preview')?.querySelector('[data-map-fallback]');
+    if (fallback instanceof HTMLElement) fallback.hidden = true;
+  };
+
   const activateEmbed = (frame) => {
     if (!(frame instanceof HTMLIFrameElement) || frame.dataset.loaded === 'true') return;
     const src = frame.dataset.src;
-    if (!src) return;
+    if (!src) {
+      showMapFallback(frame);
+      return;
+    }
+    frame.addEventListener('load', () => hideMapFallback(frame), { once: true });
+    frame.addEventListener('error', () => showMapFallback(frame), { once: true });
+    window.setTimeout(() => {
+      if (frame.dataset.loaded === 'true') return;
+      showMapFallback(frame);
+    }, 6500);
     frame.src = src;
     frame.dataset.loaded = 'true';
     delete frame.dataset.src;
@@ -727,6 +786,8 @@ function askGuestAuthorName(initialValue = '') {
 
   return new Promise((resolve) => {
     let settled = false;
+    lastAuthorModalTrigger =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
     const closeModal = (value) => {
       if (settled) return;
@@ -738,7 +799,10 @@ function askGuestAuthorName(initialValue = '') {
       authorModalCancel?.removeEventListener('click', onCancel);
       authorModalClose?.removeEventListener('click', onCancel);
       authorModal.removeEventListener('click', onBackdropClick);
+      document.removeEventListener('keydown', onTrapFocus);
       document.removeEventListener('keydown', onEscape);
+      restoreFocus(lastAuthorModalTrigger);
+      lastAuthorModalTrigger = null;
       resolve(value);
     };
 
@@ -763,6 +827,10 @@ function askGuestAuthorName(initialValue = '') {
       if (event.key === 'Escape') onCancel();
     };
 
+    const onTrapFocus = (event) => {
+      trapFocusWithin(authorModal, event);
+    };
+
     authorModalInput.value = initialValue;
     authorModalError.textContent = '';
     authorModal.classList.add('is-open');
@@ -772,6 +840,7 @@ function askGuestAuthorName(initialValue = '') {
     authorModalCancel?.addEventListener('click', onCancel);
     authorModalClose?.addEventListener('click', onCancel);
     authorModal.addEventListener('click', onBackdropClick);
+    document.addEventListener('keydown', onTrapFocus);
     document.addEventListener('keydown', onEscape);
     requestAnimationFrame(() => {
       authorModalInput.focus();
@@ -955,6 +1024,7 @@ function getMosaicVariantClass(index) {
 
 function openLightbox(index) {
   if (!photoLightbox || !lightboxImage || !guestGalleryItems.length) return;
+  lastLightboxTrigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const safeIndex = ((index % guestGalleryItems.length) + guestGalleryItems.length) % guestGalleryItems.length;
   const image = guestGalleryItems[safeIndex];
   if (!image) return;
@@ -965,7 +1035,11 @@ function openLightbox(index) {
   lightboxImage.alt = authorLabel ? `Foto di ${authorLabel}` : 'Foto invitati';
   photoLightbox.classList.add('is-open');
   photoLightbox.setAttribute('aria-hidden', 'false');
+  photoLightbox.setAttribute('tabindex', '-1');
   document.body.classList.add('lightbox-open');
+  requestAnimationFrame(() => {
+    (lightboxCloseButton || photoLightbox).focus();
+  });
 }
 
 function closeLightbox() {
@@ -974,6 +1048,8 @@ function closeLightbox() {
   photoLightbox.setAttribute('aria-hidden', 'true');
   lightboxImage.src = '';
   document.body.classList.remove('lightbox-open');
+  restoreFocus(lastLightboxTrigger);
+  lastLightboxTrigger = null;
 }
 
 function showNextLightboxImage(direction) {
@@ -1249,6 +1325,8 @@ async function initGuestGallery() {
         showNextLightboxImage(-1);
       } else if (event.key === 'ArrowRight') {
         showNextLightboxImage(1);
+      } else if (event.key === 'Tab') {
+        trapFocusWithin(photoLightbox, event);
       }
     });
   }

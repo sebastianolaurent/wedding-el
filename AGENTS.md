@@ -20,7 +20,8 @@ Quando l'utente scrive solo `git`, esegui automaticamente il flusso commit stand
 
 1. `git add -A`
 2. `git commit -m "<type>: <short description>"` seguendo le convenzioni sopra
-3. mostra in output hash e subject del commit creato
+3. `git push`
+4. mostra in output hash e subject del commit creato
 
 ## Trigger rapido: `localhost`
 

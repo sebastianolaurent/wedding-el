@@ -24,6 +24,7 @@
     <link rel="stylesheet" href="styles.min.css" />
   </head>
   <body>
+    <a class="skip-link" href="#main-content">Vai al contenuto principale</a>
     <header class="hero" id="top">
       <div class="hero-overlay"></div>
       <picture>
@@ -58,7 +59,7 @@
       </div>
     </header>
 
-    <main>
+    <main id="main-content">
       <section class="section invite" id="dettagli">
         <div class="container">
           <div class="section-head program-head">
@@ -110,6 +111,17 @@
                   allowfullscreen
                   title="Mappa location cerimonia"
                 ></iframe>
+                <p class="program-map-fallback" data-map-fallback hidden>
+                  Se la mappa non si carica, aprila direttamente:
+                  <a
+                    class="place-link js-map-link"
+                    href="https://maps.apple.com/?q=Piazza%20S%20Chiara%2C%201%2C%2029022%20Bobbio%20PC"
+                    data-label="Piazza S Chiara, 1, 29022 Bobbio PC"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >Apri mappa cerimonia</a
+                  >
+                </p>
               </div>
             </article>
 
@@ -147,6 +159,19 @@
                   allowfullscreen
                   title="Mappa location ricevimento"
                 ></iframe>
+                <p class="program-map-fallback" data-map-fallback hidden>
+                  Se la mappa non si carica, aprila direttamente:
+                  <a
+                    class="place-link js-map-link"
+                    href="https://maps.apple.com/?q=Agriturismo%20Il%20Torrione%20del%20Trebbia%20Localita%20Morina%201%2029022%20Bobbio%20PC"
+                    data-lat="44.76504"
+                    data-lon="9.39456"
+                    data-label="Agriturismo Il Torrione del Trebbia Località Morina 1 29022 Bobbio PC"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >Apri mappa ricevimento</a
+                  >
+                </p>
               </div>
             </article>
 
