@@ -29,7 +29,7 @@ DTSTAMP:20260414T120000Z
 DTSTART;TZID=Europe/Rome:20260926T113000
 DTEND;TZID=Europe/Rome:20260926T123000
 SUMMARY:Cerimonia matrimonio Eleonora e Luca
-DESCRIPTION:Inizio cerimonia alle 11:30 (da confermare).
+DESCRIPTION:Inizio cerimonia alle 11:30.
 LOCATION:Comune di Bobbio\, Piazza S Chiara 1\, 29022 Bobbio PC
 STATUS:CONFIRMED
 END:VEVENT
@@ -37,9 +37,9 @@ BEGIN:VEVENT
 UID:20260926T110000-ellini-ricevimento@ellini.wedding
 DTSTAMP:20260414T120000Z
 DTSTART;TZID=Europe/Rome:20260926T130000
-DTEND;TZID=Europe/Rome:20260926T220000
+DTEND;TZID=Europe/Rome:20260926T200000
 SUMMARY:Ricevimento matrimonio Eleonora e Luca
-DESCRIPTION:Pranzo e festa fino alle 22:00.
+DESCRIPTION:Pranzo e festa fino alle 20:00.
 LOCATION:Agriturismo Il Torrione del Trebbia\, Località Morina 1\, 29022 Bobbio PC
 STATUS:CONFIRMED
 END:VEVENT
