@@ -1,0 +1,66 @@
+name: Supabase keepalive
+
+on:
+  schedule:
+    - cron: '17 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping-storage:
+    name: Ping Supabase Storage
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Read one storage object
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+
+          void (async () => {
+            const config = fs.readFileSync('config.js', 'utf8');
+            const getConfigValue = (key) => {
+              const match = config.match(new RegExp(`${key}:\\s*['"]([^'"]+)['"]`));
+              if (!match) {
+                throw new Error(`Missing ${key} in config.js`);
+              }
+              return match[1];
+            };
+
+            const url = getConfigValue('url').replace(/\/$/, '');
+            const anonKey = getConfigValue('anonKey');
+            const bucket = getConfigValue('bucket');
+
+            const response = await fetch(`${url}/storage/v1/object/list/${encodeURIComponent(bucket)}`, {
+              method: 'POST',
+              headers: {
+                apikey: anonKey,
+                authorization: `Bearer ${anonKey}`,
+                'content-type': 'application/json',
+              },
+            body: JSON.stringify({
+              prefix: '',
+              limit: 1,
+              offset: 0,
+              sortBy: {
+                  column: 'created_at',
+                  order: 'desc',
+                },
+              }),
+            });
+
+            if (!response.ok) {
+              const body = await response.text();
+              throw new Error(`Supabase keepalive failed with ${response.status}: ${body}`);
+            }
+
+            console.log('Supabase keepalive completed.');
+          })();
+          NODE
