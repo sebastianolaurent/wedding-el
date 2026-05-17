@@ -288,10 +288,15 @@ p {
 .hero-content .eyebrow {
   display: inline-block;
   color: #f9f2ff;
-  background: rgba(63, 41, 93, 0.46);
-  border: 1px solid rgba(238, 224, 255, 0.55);
+  background: rgba(63, 41, 93, 0.4);
+  border: 1px solid rgba(248, 240, 255, 0.58);
   border-radius: 999px;
   padding: 0.35rem 0.75rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 10px 24px rgba(26, 16, 42, 0.16);
+  backdrop-filter: blur(12px) saturate(135%);
+  -webkit-backdrop-filter: blur(12px) saturate(135%);
 }
 
 .hero-content h1 span {
@@ -328,10 +333,15 @@ p {
   border-radius: 999px;
   padding: 0.34rem 0.7rem;
   border: 1px solid rgba(246, 235, 255, 0.65);
-  background: rgba(32, 18, 52, 0.35);
+  background: rgba(32, 18, 52, 0.3);
   color: #fff8ff;
   font-size: 0.78rem;
   letter-spacing: 0.02em;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 8px 20px rgba(24, 14, 38, 0.14);
+  backdrop-filter: blur(12px) saturate(132%);
+  -webkit-backdrop-filter: blur(12px) saturate(132%);
 }
 
 .hero-badge-deadline {
@@ -339,9 +349,11 @@ p {
   font-weight: 800;
   letter-spacing: 0.03em;
   border: 1px solid rgba(182, 146, 228, 0.46);
-  background: linear-gradient(140deg, rgba(247, 241, 255, 0.92), rgba(233, 220, 252, 0.9));
+  background: linear-gradient(140deg, rgba(247, 241, 255, 0.82), rgba(233, 220, 252, 0.72));
   color: #3d2856;
-  box-shadow: 0 6px 16px rgba(89, 59, 127, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 8px 20px rgba(89, 59, 127, 0.18);
 }
 
 .scroll-cue-only {
@@ -1342,8 +1354,6 @@ body.author-modal-open {
     background:
       linear-gradient(to top, rgba(10, 7, 15, 0.3), rgba(10, 7, 15, 0.3)),
       radial-gradient(circle at 75% 20%, rgba(156, 120, 214, 0.1), transparent 42%);
-    backdrop-filter: blur(10px) saturate(128%);
-    -webkit-backdrop-filter: blur(10px) saturate(128%);
   }
 
   .hero-content .eyebrow {
