@@ -528,7 +528,7 @@ function initHomepageEasterEgg() {
   });
 }
 
-function getPreferredMapsUrl(lat, lon, label) {
+function getPreferredMapsUrl(lat, lon, label, placeId) {
   const encodedLabel = encodeURIComponent(label);
   const ua = navigator.userAgent || '';
   const isAndroid = /Android/i.test(ua);
@@ -538,6 +538,10 @@ function getPreferredMapsUrl(lat, lon, label) {
       return `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
     }
     return `https://www.google.com/maps/search/?api=1&query=${encodedLabel}`;
+  }
+
+  if (placeId) {
+    return `https://maps.apple.com/place?place-id=${encodeURIComponent(placeId)}`;
   }
 
   if (lat && lon) {
@@ -550,8 +554,8 @@ function getPreferredMapsUrl(lat, lon, label) {
 function hydrateMapLinks() {
   const mapLinks = document.querySelectorAll('.js-map-link');
   mapLinks.forEach((link) => {
-    const { lat, lon, label } = link.dataset;
-    const targetUrl = getPreferredMapsUrl(lat, lon, label || 'Destinazione');
+    const { lat, lon, label, placeId } = link.dataset;
+    const targetUrl = getPreferredMapsUrl(lat, lon, label || 'Destinazione', placeId);
     link.setAttribute('href', targetUrl);
   });
 }
